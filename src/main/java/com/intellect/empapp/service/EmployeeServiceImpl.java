@@ -15,7 +15,7 @@ import com.intellect.empapp.dao.EmployeeDao;
 import com.intellect.empapp.dao.EmployeeDaoImpl;
 import com.intellect.empapp.model.Employee;
 import com.intellect.empapp.response.EmployeeResponse;
-
+import static com.intellect.empapp.validation.EmployeeValidation.isInvalidcreateEmployeeRequest;;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -32,18 +32,36 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public ResponseEntity<EmployeeResponse> createEmployee(Employee createEmployeeRequest) {
 		logger.debug("entering inside createEmployee(Employee createEmployeeRequest) method");
 		logger.debug("Create Employee Request : {} ", createEmployeeRequest);
-		EmployeeResponse createEmployeeResponse = new EmployeeResponse();
-		if(employeeDao.isEmployeeAlreadyExist(createEmployeeRequest)){
-			createEmployeeResponse.setResMsg("employee with the given email id already exist, please try another emial id");
+		EmployeeResponse createEmployeeResponse = isInvalidcreateEmployeeRequest(createEmployeeRequest);
+		if(!createEmployeeResponse.getValErrors().isEmpty()){
+			return new ResponseEntity<EmployeeResponse>(createEmployeeResponse, HttpStatus.OK);
 		}
-		return employeeService.createEmployee(createEmployeeRequest);
+		createEmployeeResponse = new EmployeeResponse();
+		if(employeeDao.isEmployeeAlreadyExist(createEmployeeRequest)){
+			logger.debug("entering inside createEmployee(Employee createEmployeeRequest) method");
+			createEmployeeResponse.setResMsg("employee with the given email id already exist, please try another email id");
+			return new ResponseEntity<EmployeeResponse>(createEmployeeResponse, HttpStatus.OK);
+		}
+		Employee foundEmp = employeeDao.saveEmployee(createEmployeeRequest);
+		createEmployeeResponse.setUserId(foundEmp.getId());
+		createEmployeeResponse.setResMsg("Employee with given information created successfully");
+		return new ResponseEntity<EmployeeResponse>(createEmployeeResponse, HttpStatus.OK);
 	}
 
 	@Override
 	public ResponseEntity<EmployeeResponse> updateEmployee(Employee createEmployeeRequest) {
 		logger.debug("entering inside updateEmployee(Employee createEmployeeRequest) method");
 		logger.debug("Update Employee Request : {} ", createEmployeeRequest);
-		return employeeService.updateEmployee(createEmployeeRequest);
+		EmployeeResponse updateEmployeeResponse = new EmployeeResponse();
+		Employee foundEmployee = employeeDao.findEmployee(createEmployeeRequest.getId());
+		if(null == foundEmployee){
+			updateEmployeeResponse.setResMsg("employee with given details not found");
+			return new ResponseEntity<EmployeeResponse>(updateEmployeeResponse, HttpStatus.OK);
+		}
+		foundEmployee = employeeDao.updateEmployee(createEmployeeRequest);
+		updateEmployeeResponse.setResMsg("employee with given details updated successfully");
+		updateEmployeeResponse.setUserId(foundEmployee.getId());
+		return new ResponseEntity<EmployeeResponse>(updateEmployeeResponse, HttpStatus.OK);	
 	}
 
 

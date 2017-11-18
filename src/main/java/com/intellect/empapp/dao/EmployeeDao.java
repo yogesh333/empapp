@@ -7,5 +7,6 @@ public interface EmployeeDao {
   public Employee updateEmployee(Employee createEmployeeRequest);
   public Boolean removeEmployee(String employeeId);
   public Boolean isEmployeeAlreadyExist(Employee employee);
+  public Employee findEmployee(String employeeId);
   
 }

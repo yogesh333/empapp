@@ -3,6 +3,8 @@ package com.intellect.empapp.model;
 import java.io.Serializable;
 import java.sql.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class Employee implements Serializable{
 
 	private String id;
@@ -15,6 +17,7 @@ public class Employee implements Serializable{
 	
 	private Integer pinCode;
 	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MMM-yyyy")
 	private Date birthDate;
 	
 	private Boolean isActive;
